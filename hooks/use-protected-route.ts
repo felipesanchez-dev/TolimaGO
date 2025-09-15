@@ -1,6 +1,6 @@
-import { useAuth } from '@/context/auth-context';
-import { useRouter, useSegments } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useAuth } from "@/context/auth-context";
+import { useRouter, useSegments } from "expo-router";
+import React, { useEffect, useState } from "react";
 
 /**
  * Hook de protección de rutas
@@ -15,8 +15,8 @@ export function useProtectedRoute() {
   useEffect(() => {
     if (isLoading || isNavigating) return;
 
-    const inAuthGroup = segments[0] === 'auth';
-    const inTabsGroup = segments[0] === '(tabs)';
+    const inAuthGroup = segments[0] === "auth";
+    const inTabsGroup = segments[0] === "(tabs)";
     const inIndex = segments[0] === undefined;
 
     setIsNavigating(true);
@@ -26,19 +26,19 @@ export function useProtectedRoute() {
         // Usuario autenticado
         if (inAuthGroup || inIndex) {
           // Está en auth o index -> redirect a tabs
-          router.replace('/(tabs)');
+          router.replace("/(tabs)");
         }
       } else {
         // Usuario no autenticado
         if (inTabsGroup) {
           // Está en tabs -> redirect a login
-          router.replace('/auth/login');
-        } else if (!inAuthGroup && !inIndex && segments[0] !== 'splash') {
+          router.replace("/auth/login");
+        } else if (!inAuthGroup && !inIndex && segments[0] !== "splash") {
           // No está en auth, index o splash -> redirect a login
-          router.replace('/auth/login');
+          router.replace("/auth/login");
         }
       }
-      
+
       setIsNavigating(false);
     }, 100);
 
@@ -64,11 +64,11 @@ export function withProtectedRoute<T extends object>(
     const { isLoading, user } = useProtectedRoute();
 
     if (isLoading) {
-      return null; // O un componente de loading
+      return null;
     }
 
     if (!user) {
-      return null; // Se redirige automáticamente
+      return null;
     }
 
     return React.createElement(Component, props);
@@ -86,12 +86,11 @@ export function usePermissions() {
   };
 
   const hasPermission = (permission: string) => {
-    // Implementar lógica de permisos según el backend
-    return user?.role === 'admin' || false;
+    return user?.role === "admin" || false;
   };
 
   const isAdmin = () => {
-    return hasRole('admin') || hasRole('administrator');
+    return hasRole("admin") || hasRole("administrator");
   };
 
   const isResident = () => {

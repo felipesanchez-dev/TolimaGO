@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
-import { Lock, Mail, MapPin, Phone, User } from "lucide-react-native";
+import { Lock, Mail, User } from "lucide-react-native";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -17,12 +17,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   AuthHeader,
   FormError,
+  LocationSelector,
   PrimaryButton,
   TextInputField,
   Toggle,
 } from "@/components/auth";
 import { theme } from "@/constants/design-tokens";
 import { globalStyles } from "@/constants/global-styles";
+import { LocationData } from "@/constants/locations";
 import { useAuth } from "@/context/auth-context";
 import { formatColombianPhone, registerSchema } from "@/lib/validations";
 
@@ -32,11 +34,9 @@ import { formatColombianPhone, registerSchema } from "@/lib/validations";
  */
 
 export default function RegisterScreen() {
-  // =================== ESTADO LOCAL ===================
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // =================== HOOKS ===================
   const { register, error: authError, clearError } = useAuth();
 
   const {
@@ -45,6 +45,7 @@ export default function RegisterScreen() {
     formState: { errors, isValid },
     reset,
     watch,
+    setValue,
   } = useForm({
     resolver: zodResolver(registerSchema),
     mode: "onBlur",
@@ -55,40 +56,41 @@ export default function RegisterScreen() {
       confirmPassword: "",
       isResident: false,
       acceptTerms: false,
-      phone: "",
-      city: "",
+      phone: "+57 ",
+      location: {
+        country: "",
+        state: "",
+        city: "",
+        isTolima: false,
+      } as LocationData,
     },
   });
 
-  // Observar valores para validaciones en tiempo real
   const acceptTerms = watch("acceptTerms");
+  const isResident = watch("isResident");
 
-  // =================== HANDLERS ===================
   const onSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
       setSubmitError(null);
       clearError();
 
-      // Preparar datos para el registro
       const registerData = {
         name: data.name.trim(),
         email: data.email.trim().toLowerCase(),
         password: data.password,
         phone: data.phone?.trim() || undefined,
-        city: data.city?.trim() || undefined,
+        city: data.location?.city?.trim() || undefined,
         isResident: data.isResident,
         role: "user" as const,
       };
 
       await register(registerData);
 
-      // Si llega aquí, el registro fue exitoso
       router.replace("/auth/login");
     } catch (error: any) {
       console.error("Register error:", error);
 
-      // Mapear errores específicos
       let errorMessage = "Error al crear la cuenta. Intenta nuevamente.";
 
       if (
@@ -115,24 +117,42 @@ export default function RegisterScreen() {
   };
 
   const handlePhoneChange = (text: string) => {
-    // Formatear automáticamente el teléfono
+    // Si el usuario trata de borrar todo, mantener el prefijo +57
+    if (text.length < 4) {
+      return "+57 ";
+    }
+
+    // Si no empieza con +57, agregarlo automáticamente
+    if (!text.startsWith("+57")) {
+      // Si empieza con 57, agregar el +
+      if (text.startsWith("57")) {
+        text = "+" + text;
+      } else if (
+        text.startsWith("3") ||
+        text.startsWith("6") ||
+        text.startsWith("1")
+      ) {
+        // Si empieza con números colombianos típicos, agregar +57
+        text = "+57 " + text;
+      } else {
+        // Para cualquier otro caso, forzar el prefijo
+        text = "+57 " + text.replace(/^\+?57?\s?/, "");
+      }
+    }
+
     const formatted = formatColombianPhone(text);
     return formatted;
   };
 
-  // =================== EFECTOS ===================
   React.useEffect(() => {
-    // Limpiar errores cuando el componente se monta
     clearError();
     setSubmitError(null);
 
     return () => {
-      // Limpiar formulario al desmontar
       reset();
     };
   }, [clearError, reset]);
 
-  // =================== RENDER ===================
   return (
     <SafeAreaView style={globalStyles.container}>
       <KeyboardAvoidingView
@@ -146,10 +166,9 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Header con logo y título */}
           <Animated.View entering={FadeInUp.duration(600)}>
             <AuthHeader
-              title="Únete a TolimaGO"
+              title=""
               subtitle="Crea tu cuenta y explora el Tolima"
               showBackButton={true}
               onBackPress={handleBackToLogin}
@@ -157,12 +176,10 @@ export default function RegisterScreen() {
             />
           </Animated.View>
 
-          {/* Formulario de registro */}
           <Animated.View
             style={styles.formContainer}
             entering={FadeInDown.delay(300).duration(600)}
           >
-            {/* Errores generales */}
             {(submitError || authError) && (
               <FormError
                 errors={submitError || authError || ""}
@@ -171,7 +188,6 @@ export default function RegisterScreen() {
               />
             )}
 
-            {/* Campo de nombre */}
             <Controller
               control={control}
               name="name"
@@ -194,7 +210,6 @@ export default function RegisterScreen() {
               )}
             />
 
-            {/* Campo de email */}
             <Controller
               control={control}
               name="email"
@@ -219,7 +234,6 @@ export default function RegisterScreen() {
               )}
             />
 
-            {/* Campo de contraseña */}
             <Controller
               control={control}
               name="password"
@@ -243,7 +257,6 @@ export default function RegisterScreen() {
               )}
             />
 
-            {/* Campo de confirmar contraseña */}
             <Controller
               control={control}
               name="confirmPassword"
@@ -266,58 +279,80 @@ export default function RegisterScreen() {
               )}
             />
 
-            {/* Campo de teléfono (opcional) */}
             <Controller
               control={control}
               name="phone"
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInputField
                   label="Teléfono"
-                  value={value || ""}
+                  value={value || "+57 "}
                   onChangeText={(text) => onChange(handlePhoneChange(text))}
                   onBlur={onBlur}
                   error={errors.phone?.message}
                   leftIcon={
-                    <Phone size={20} color={theme.colors.text.secondary} />
+                    <View style={styles.phoneIconContainer}>
+                      <Text style={styles.flagEmoji}>🇨🇴</Text>
+                    </View>
                   }
                   keyboardType="phone-pad"
                   placeholder="+57 300 123 4567"
-                  helperText="Opcional - Formato colombiano"
+                  helperText="Formato colombiano - +57 seguido del número"
                   testID="register-phone-input"
                 />
               )}
             />
 
-            {/* Campo de ciudad (opcional) */}
             <Controller
               control={control}
-              name="city"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInputField
-                  label="Ciudad"
-                  value={value || ""}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  error={errors.city?.message}
-                  leftIcon={
-                    <MapPin size={20} color={theme.colors.text.secondary} />
-                  }
-                  placeholder="Tu ciudad"
-                  autoCapitalize="words"
-                  helperText="Opcional"
-                  testID="register-city-input"
+              name="location"
+              render={({ field: { onChange, value } }) => (
+                <LocationSelector
+                  value={{
+                    country: value?.country || "",
+                    state: value?.state || "", 
+                    city: value?.city || "",
+                    isTolima: value?.isTolima || false,
+                  }}
+                  onChange={(location) => {
+                    onChange(location);
+                    // Actualizar isResident automáticamente si selecciona Tolima
+                    if (location.isTolima !== isResident) {
+                      setValue("isResident", location.isTolima);
+                    }
+                  }}
+                  isTolima={isResident || false}
+                  error={errors.location?.city?.message || errors.location?.country?.message}
                 />
               )}
             />
 
-            {/* Toggle de residente del Tolima */}
             <Controller
               control={control}
               name="isResident"
               render={({ field: { onChange, value } }) => (
                 <Toggle
                   value={value ?? false}
-                  onValueChange={onChange}
+                  onValueChange={(newValue) => {
+                    onChange(newValue);
+                    // Si cambia de residente, actualizar la ubicación
+                    if (newValue) {
+                      // Si marca como residente, reset location para Tolima
+                      setValue("location", {
+                        country: "CO",
+                        state: "Tolima",
+                        city: "",
+                        isTolima: true,
+                      });
+                    } else {
+                      // Si desmarca residente, reset location
+                      setValue("location", {
+                        country: "",
+                        state: "",
+                        city: "",
+                        isTolima: false,
+                      });
+                    }
+                  }}
                   label="Soy residente del Tolima"
                   description="Obtén beneficios especiales como residente"
                   testID="register-resident-toggle"
@@ -325,7 +360,6 @@ export default function RegisterScreen() {
               )}
             />
 
-            {/* Toggle de aceptar términos */}
             <Controller
               control={control}
               name="acceptTerms"
@@ -346,7 +380,6 @@ export default function RegisterScreen() {
               )}
             />
 
-            {/* Botón de crear cuenta */}
             <PrimaryButton
               title="Crear Cuenta"
               onPress={handleSubmit(onSubmit)}
@@ -359,7 +392,6 @@ export default function RegisterScreen() {
               testID="register-submit-button"
             />
 
-            {/* Link para iniciar sesión */}
             <View style={styles.loginContainer}>
               <Text style={styles.loginText}>¿Ya tienes cuenta? </Text>
               <Text style={styles.loginLink} onPress={handleBackToLogin}>
@@ -373,7 +405,6 @@ export default function RegisterScreen() {
   );
 }
 
-// =================== ESTILOS ===================
 const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
@@ -387,7 +418,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: theme.spacing[6],
     paddingVertical: theme.spacing[4],
-    paddingBottom: theme.spacing[8], // Espacio extra para el teclado
+    paddingBottom: theme.spacing[8],
   },
 
   formContainer: {
@@ -405,7 +436,7 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.error.main,
     marginTop: theme.spacing[1],
-    marginLeft: theme.spacing[12], // Alineado con el texto del toggle
+    marginLeft: theme.spacing[12],
   },
 
   submitButton: {
@@ -432,5 +463,15 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.fontWeight.semiBold,
     color: theme.colors.primary.main,
     textDecorationLine: "underline",
+  },
+
+  phoneIconContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing[1],
+  },
+
+  flagEmoji: {
+    fontSize: 16,
   },
 });

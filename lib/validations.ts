@@ -5,8 +5,6 @@ import { z } from "zod";
  * Esquemas de validación con Zod para formularios de autenticación
  */
 
-// =================== ESQUEMAS BASE ===================
-
 const emailSchema = z
   .string()
   .min(1, "El email es requerido")
@@ -30,19 +28,30 @@ const phoneSchema = z
   .string()
   .optional()
   .refine((value) => {
-    if (!value) return true; // Opcional
-    // Formato colombiano: +57 3XX XXXXXXX o similar
+    if (!value) return true;
     const phoneRegex = /^(\+57\s?)?[3][0-9]{2}\s?[0-9]{7}$/;
     return phoneRegex.test(value.replace(/\s/g, ""));
   }, "Ingresa un número de teléfono colombiano válido (+57 3XX XXXXXXX)");
 
-const citySchema = z
-  .string()
-  .optional()
-  .refine((value) => {
-    if (!value) return true; // Opcional
-    return value.length >= 2 && value.length <= 50;
-  }, "La ciudad debe tener entre 2 y 50 caracteres");
+const locationSchema = z
+  .object({
+    country: z.string().optional(),
+    state: z.string().optional(),
+    city: z.string().optional(),
+    isTolima: z.boolean().default(false),
+  })
+  .refine(
+    (data) => {
+      if (data.isTolima) {
+        return !!data.city;
+      }
+      return !!data.country;
+    },
+    {
+      message: "Debes seleccionar una ubicación válida",
+      path: ["city"],
+    }
+  );
 
 // =================== ESQUEMA DE LOGIN ===================
 export const loginSchema = z.object({
@@ -67,7 +76,7 @@ export const registerSchema = z
         "Debes aceptar los términos y condiciones"
       ),
     phone: phoneSchema,
-    city: citySchema,
+    location: locationSchema,
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Las contraseñas no coinciden",
@@ -129,7 +138,7 @@ export const validatePasswordStrength = (password: string) => {
     score: strength,
     checks: score,
     strength: strength < 2 ? "weak" : strength < 4 ? "medium" : "strong",
-    isValid: strength >= 3, // Mínimo 3 criterios
+    isValid: strength >= 3,
   };
 };
 

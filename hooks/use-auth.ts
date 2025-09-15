@@ -78,10 +78,10 @@ export interface AuthActions {
 
 export interface UseAuthOptions {
   enableAutoRefresh?: boolean;
-  refreshThreshold?: number; // Minutos antes del vencimiento para refrescar
+  refreshThreshold?: number;
   maxLoginAttempts?: number;
-  lockDuration?: number; // Minutos de bloqueo
-  sessionTimeout?: number; // Minutos de inactividad antes de logout
+  lockDuration?: number;
+  sessionTimeout?: number;
   enableBiometrics?: boolean;
   persistSession?: boolean;
 }
@@ -101,10 +101,10 @@ const STORAGE_KEYS = {
 export function useAuth(options: UseAuthOptions = {}) {
   const {
     enableAutoRefresh = true,
-    refreshThreshold = 5, // 5 minutos
+    refreshThreshold = 5,
     maxLoginAttempts = 5,
-    lockDuration = 30, // 30 minutos
-    sessionTimeout = 60, // 60 minutos
+    lockDuration = 30,
+    sessionTimeout = 60,
     persistSession = true,
   } = options;
 

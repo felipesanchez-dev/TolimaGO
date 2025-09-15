@@ -24,37 +24,30 @@ import Animated, {
  */
 
 export interface TextInputFieldProps extends Omit<TextInputProps, "style"> {
-  // Contenido y estado
   label: string;
   value: string;
   onChangeText: (text: string) => void;
   error?: string | null;
   helperText?: string;
 
-  // Iconos
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 
-  // Campo de contraseña
   secureTextEntry?: boolean;
   showPasswordToggle?: boolean;
 
-  // Estados
   disabled?: boolean;
   required?: boolean;
   loading?: boolean;
 
-  // Estilos
   containerStyle?: ViewStyle;
   inputStyle?: TextStyle;
   labelStyle?: TextStyle;
 
-  // Comportamiento
   animatedBorder?: boolean;
   showCharacterCount?: boolean;
   maxLength?: number;
 
-  // Accesibilidad
   testID?: string;
 }
 
@@ -63,40 +56,32 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 export const TextInputField = forwardRef<TextInput, TextInputFieldProps>(
   (
     {
-      // Props básicas
       label,
       value,
       onChangeText,
       error,
       helperText,
 
-      // Iconos
       leftIcon,
       rightIcon,
 
-      // Seguridad
       secureTextEntry = false,
       showPasswordToggle = false,
 
-      // Estados
       disabled = false,
       required = false,
       loading = false,
 
-      // Estilos
       containerStyle,
       inputStyle,
       labelStyle,
 
-      // Comportamiento
       animatedBorder = true,
       showCharacterCount = false,
       maxLength,
 
-      // Accesibilidad
       testID,
 
-      // Props del TextInput
       placeholder,
       keyboardType,
       autoCapitalize,
@@ -108,15 +93,12 @@ export const TextInputField = forwardRef<TextInput, TextInputFieldProps>(
     },
     ref
   ) => {
-    // =================== ESTADO LOCAL ===================
     const [isFocused, setIsFocused] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-    // =================== VALORES ANIMADOS ===================
     const focusAnimation = useSharedValue(0);
     const labelAnimation = useSharedValue(value ? 1 : 0);
 
-    // =================== HANDLERS ===================
     const handleFocus = (e: any) => {
       setIsFocused(true);
       focusAnimation.value = withTiming(1, {
@@ -162,7 +144,6 @@ export const TextInputField = forwardRef<TextInput, TextInputFieldProps>(
       setIsPasswordVisible(!isPasswordVisible);
     };
 
-    // =================== ESTILOS ANIMADOS ===================
     const animatedBorderStyle = useAnimatedStyle(() => {
       if (!animatedBorder) return {};
 
@@ -205,13 +186,11 @@ export const TextInputField = forwardRef<TextInput, TextInputFieldProps>(
       };
     });
 
-    // =================== CONFIGURACIÓN FINAL ===================
     const isSecure = secureTextEntry && !isPasswordVisible;
     const hasError = Boolean(error);
     const characterCount = value.length;
     const showRightIcon = rightIcon || (secureTextEntry && showPasswordToggle);
 
-    // Props de accesibilidad
     const accessibilityProps = {
       accessible: true,
       accessibilityLabel: label,
@@ -225,12 +204,9 @@ export const TextInputField = forwardRef<TextInput, TextInputFieldProps>(
 
     return (
       <View style={[styles.container, containerStyle]}>
-        {/* Campo de entrada con animaciones */}
         <AnimatedView style={[styles.inputContainer, animatedBorderStyle]}>
-          {/* Ícono izquierdo */}
           {leftIcon && <View style={styles.leftIconContainer}>{leftIcon}</View>}
 
-          {/* Input principal */}
           <View style={styles.inputWrapper}>
             <TextInput
               ref={ref}
@@ -252,7 +228,7 @@ export const TextInputField = forwardRef<TextInput, TextInputFieldProps>(
                   ? placeholder
                   : undefined
               }
-              placeholderTextColor={theme.colors.text.tertiary}
+              placeholderTextColor={theme.colors.text.secondary}
               keyboardType={keyboardType}
               autoCapitalize={autoCapitalize}
               autoComplete={autoComplete}
@@ -263,7 +239,6 @@ export const TextInputField = forwardRef<TextInput, TextInputFieldProps>(
               {...otherProps}
             />
 
-            {/* Label animado */}
             <Animated.Text
               style={[
                 styles.label,
@@ -278,7 +253,6 @@ export const TextInputField = forwardRef<TextInput, TextInputFieldProps>(
             </Animated.Text>
           </View>
 
-          {/* Ícono derecho / Toggle de contraseña */}
           {showRightIcon && (
             <TouchableOpacity
               style={styles.rightIconContainer}
@@ -310,10 +284,8 @@ export const TextInputField = forwardRef<TextInput, TextInputFieldProps>(
           )}
         </AnimatedView>
 
-        {/* Texto de ayuda, error y contador */}
         <View style={styles.footerContainer}>
           <View style={styles.footerLeft}>
-            {/* Error */}
             {hasError && (
               <View style={styles.errorContainer}>
                 <AlertCircle size={14} color={theme.colors.error.main} />
@@ -321,13 +293,11 @@ export const TextInputField = forwardRef<TextInput, TextInputFieldProps>(
               </View>
             )}
 
-            {/* Texto de ayuda (solo si no hay error) */}
             {!hasError && helperText && (
               <Text style={styles.helperText}>{helperText}</Text>
             )}
           </View>
 
-          {/* Contador de caracteres */}
           {showCharacterCount && maxLength && (
             <Text
               style={[
@@ -346,7 +316,6 @@ export const TextInputField = forwardRef<TextInput, TextInputFieldProps>(
 
 TextInputField.displayName = "TextInputField";
 
-// =================== ESTILOS ===================
 const styles = StyleSheet.create({
   container: {
     marginBottom: theme.spacing[4],
@@ -411,8 +380,8 @@ const styles = StyleSheet.create({
 
   label: {
     position: "absolute",
-    left: 0,
-    top: 0,
+    left: 10,
+    top: 15,
     fontFamily: theme.typography.fontFamily.primary,
     fontSize: theme.typography.fontSize.base,
     color: theme.colors.text.secondary,

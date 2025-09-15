@@ -31,11 +31,9 @@ import { LoginFormData, loginSchema } from "@/lib/validations";
  */
 
 export default function LoginScreen() {
-  // =================== ESTADO LOCAL ===================
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // =================== HOOKS ===================
   const { login, error: authError, clearError } = useAuth();
 
   const {
@@ -52,7 +50,6 @@ export default function LoginScreen() {
     },
   });
 
-  // =================== HANDLERS ===================
   const onSubmit = useCallback(
     async (data: LoginFormData) => {
       try {
@@ -65,13 +62,11 @@ export default function LoginScreen() {
           password: data.password,
         });
 
-        // Si llega aquí, el login fue exitoso
         router.replace("/(tabs)");
       } catch (error: any) {
         console.error("Login error:", error);
         console.error("Login error details:", JSON.stringify(error, null, 2));
 
-        // Mapear errores específicos
         let errorMessage = "Error al iniciar sesión. Intenta nuevamente.";
 
         if (error.code === "ERR_NETWORK") {
@@ -96,8 +91,6 @@ export default function LoginScreen() {
   );
 
   const handleForgotPassword = () => {
-    // Navegar a pantalla de recuperar contraseña
-    // router.replace('/auth/forgot-password'); // TODO: Implementar pantalla
     alert("Funcionalidad próximamente disponible");
   };
 
@@ -105,19 +98,15 @@ export default function LoginScreen() {
     router.push("/auth/register");
   };
 
-  // =================== EFECTOS ===================
   React.useEffect(() => {
-    // Limpiar errores cuando el componente se monta
     clearError();
     setSubmitError(null);
 
     return () => {
-      // Limpiar formulario al desmontar
       reset();
     };
   }, [clearError, reset]);
 
-  // =================== RENDER ===================
   return (
     <SafeAreaView style={globalStyles.container}>
       <KeyboardAvoidingView
@@ -131,22 +120,19 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Header con logo y título */}
           <Animated.View entering={FadeInUp.duration(600)}>
             <AuthHeader
-              title="Bienvenido a TolimaGO"
-              subtitle="Descubre y conecta con el corazón del Tolima"
+              title=""
+              subtitle="Descubre y conecta con el Tolima"
               showBackButton={false}
               animated={true}
             />
           </Animated.View>
 
-          {/* Formulario de login */}
           <Animated.View
             style={styles.formContainer}
             entering={FadeInDown.delay(300).duration(600)}
           >
-            {/* Errores generales */}
             {(submitError || authError) && (
               <FormError
                 errors={submitError || authError || ""}
@@ -155,7 +141,6 @@ export default function LoginScreen() {
               />
             )}
 
-            {/* Campo de email */}
             <Controller
               control={control}
               name="email"
@@ -180,7 +165,6 @@ export default function LoginScreen() {
               )}
             />
 
-            {/* Campo de contraseña */}
             <Controller
               control={control}
               name="password"
@@ -203,7 +187,6 @@ export default function LoginScreen() {
               )}
             />
 
-            {/* Link de olvidé contraseña */}
             <View style={styles.forgotPasswordContainer}>
               <Text
                 style={styles.forgotPasswordLink}
@@ -213,7 +196,6 @@ export default function LoginScreen() {
               </Text>
             </View>
 
-            {/* Botón de iniciar sesión */}
             <PrimaryButton
               title="Iniciar Sesión"
               onPress={handleSubmit(onSubmit)}
@@ -225,14 +207,12 @@ export default function LoginScreen() {
               testID="login-submit-button"
             />
 
-            {/* Separador */}
             <View style={styles.dividerContainer}>
               <View style={styles.dividerLine} />
               <Text style={styles.dividerText}>o</Text>
               <View style={styles.dividerLine} />
             </View>
 
-            {/* Link para registrarse */}
             <View style={styles.registerContainer}>
               <Text style={styles.registerText}>¿No tienes cuenta? </Text>
               <Text style={styles.registerLink} onPress={handleGoToRegister}>
@@ -246,7 +226,6 @@ export default function LoginScreen() {
   );
 }
 
-// =================== ESTILOS ===================
 const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,

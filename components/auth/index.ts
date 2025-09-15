@@ -18,3 +18,5 @@ export type { AuthHeaderProps } from "./auth-header";
 export { FormError } from "./form-error";
 export type { FormErrorProps } from "./form-error";
 
+export { LocationSelector } from "./location-selector";
+

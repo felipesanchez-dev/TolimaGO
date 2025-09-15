@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
-import { Alert } from 'react-native';
+import { useCallback, useRef, useState } from "react";
+import { Alert } from "react-native";
 
 /**
  * TolimaGO - Hook profesional para mutaciones de API
@@ -10,7 +10,11 @@ export interface UseMutationOptions<TData, TVariables> {
   mutationFn: (variables: TVariables) => Promise<TData>;
   onSuccess?: (data: TData, variables: TVariables) => void | Promise<void>;
   onError?: (error: Error, variables: TVariables) => void;
-  onSettled?: (data: TData | undefined, error: Error | null, variables: TVariables) => void;
+  onSettled?: (
+    data: TData | undefined,
+    error: Error | null,
+    variables: TVariables
+  ) => void;
   retry?: number | boolean;
   retryDelay?: number | ((attemptIndex: number) => number);
   showErrorAlert?: boolean;
@@ -81,7 +85,7 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
 
   const cancel = useCallback(() => {
     cancelRef.current = true;
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       isLoading: false,
     }));
@@ -90,35 +94,45 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
   const executeWithRetry = useCallback(
     async (variables: TVariables, currentAttempt = 1): Promise<TData> => {
       if (cancelRef.current) {
-        throw new Error('Mutation was cancelled');
+        throw new Error("Mutation was cancelled");
       }
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         attemptCount: currentAttempt,
       }));
 
       try {
-        console.log(`🚀 [Mutation] Attempt ${currentAttempt}/${typeof retry === 'number' ? retry + 1 : 'unlimited'}`);
-        
+        console.log(
+          `🚀 [Mutation] Attempt ${currentAttempt}/${
+            typeof retry === "number" ? retry + 1 : "unlimited"
+          }`
+        );
+
         const result = await mutationFn(variables);
-        
+
         if (cancelRef.current) {
-          throw new Error('Mutation was cancelled');
+          throw new Error("Mutation was cancelled");
         }
 
         return result;
       } catch (error) {
-        const shouldRetry = typeof retry === 'boolean' ? retry : currentAttempt <= retry;
-        
-        if (shouldRetry && !cancelRef.current) {
-          const delay = typeof retryDelay === 'function' 
-            ? retryDelay(currentAttempt - 1) 
-            : retryDelay;
+        const shouldRetry =
+          typeof retry === "boolean" ? retry : currentAttempt <= retry;
 
-          console.log(`⏳ [Mutation] Retrying in ${delay}ms (attempt ${currentAttempt + 1})`);
-          
-          await new Promise(resolve => setTimeout(resolve, delay));
+        if (shouldRetry && !cancelRef.current) {
+          const delay =
+            typeof retryDelay === "function"
+              ? retryDelay(currentAttempt - 1)
+              : retryDelay;
+
+          console.log(
+            `⏳ [Mutation] Retrying in ${delay}ms (attempt ${
+              currentAttempt + 1
+            })`
+          );
+
+          await new Promise((resolve) => setTimeout(resolve, delay));
           return executeWithRetry(variables, currentAttempt + 1);
         }
 
@@ -131,14 +145,14 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
   const mutate = useCallback(
     async (variables: TVariables): Promise<void> => {
       if (state.isLoading) {
-        console.warn('[Mutation] Already in progress, ignoring new mutation');
+        console.warn("[Mutation] Already in progress, ignoring new mutation");
         return;
       }
 
       currentVariablesRef.current = variables;
       cancelRef.current = false;
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: true,
         isError: false,
@@ -152,7 +166,7 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
         try {
           optimisticUpdate(variables);
         } catch (optimisticError) {
-          console.warn('[Mutation] Optimistic update failed:', optimisticError);
+          console.warn("[Mutation] Optimistic update failed:", optimisticError);
         }
       }
 
@@ -160,7 +174,7 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
         const data = await executeWithRetry(variables);
 
         if (!cancelRef.current) {
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             data,
             isLoading: false,
@@ -173,7 +187,10 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
             try {
               await onSuccess(data, variables);
             } catch (successError) {
-              console.error('[Mutation] onSuccess callback failed:', successError);
+              console.error(
+                "[Mutation] onSuccess callback failed:",
+                successError
+              );
             }
           }
         }
@@ -181,7 +198,7 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
         const finalError = error as Error;
 
         if (!cancelRef.current) {
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             error: finalError,
             isLoading: false,
@@ -193,16 +210,19 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
             try {
               revertOptimisticUpdate();
             } catch (revertError) {
-              console.warn('[Mutation] Revert optimistic update failed:', revertError);
+              console.warn(
+                "[Mutation] Revert optimistic update failed:",
+                revertError
+              );
             }
           }
 
           // Mostrar alerta de error si está habilitada
           if (showErrorAlert) {
             Alert.alert(
-              'Error',
-              finalError.message || 'Ha ocurrido un error inesperado',
-              [{ text: 'OK' }]
+              "Error",
+              finalError.message || "Ha ocurrido un error inesperado",
+              [{ text: "OK" }]
             );
           }
 
@@ -211,7 +231,10 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
             try {
               onError(finalError, variables);
             } catch (errorCallbackError) {
-              console.error('[Mutation] onError callback failed:', errorCallbackError);
+              console.error(
+                "[Mutation] onError callback failed:",
+                errorCallbackError
+              );
             }
           }
         }
@@ -219,18 +242,26 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
         if (!cancelRef.current && onSettled) {
           const currentState = state;
           try {
-            onSettled(
-              currentState.data,
-              currentState.error,
-              variables
-            );
+            onSettled(currentState.data, currentState.error, variables);
           } catch (settledError) {
-            console.error('[Mutation] onSettled callback failed:', settledError);
+            console.error(
+              "[Mutation] onSettled callback failed:",
+              settledError
+            );
           }
         }
       }
     },
-    [executeWithRetry, optimisticUpdate, revertOptimisticUpdate, onSuccess, onError, onSettled, showErrorAlert, state]
+    [
+      executeWithRetry,
+      optimisticUpdate,
+      revertOptimisticUpdate,
+      onSuccess,
+      onError,
+      onSettled,
+      showErrorAlert,
+      state,
+    ]
   );
 
   const mutateAsync = useCallback(
@@ -252,7 +283,7 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
   return {
     // Estado
     ...state,
-    
+
     // Acciones
     mutate,
     mutateAsync,
@@ -266,12 +297,13 @@ export function useApiMutation<TData = unknown, TVariables = unknown>(
  */
 export function useAuthMutation<TData = unknown, TVariables = unknown>(
   mutationFn: (variables: TVariables) => Promise<TData>,
-  options?: Omit<UseMutationOptions<TData, TVariables>, 'mutationFn'>
+  options?: Omit<UseMutationOptions<TData, TVariables>, "mutationFn">
 ) {
   return useApiMutation({
     mutationFn,
     retry: 2, // Reintentar automáticamente hasta 2 veces
-    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 5000), // Backoff exponencial
+    retryDelay: (attemptIndex) =>
+      Math.min(1000 * Math.pow(2, attemptIndex), 5000), // Backoff exponencial
     showErrorAlert: false, // Los formularios manejan sus propios errores
     ...options,
   });
@@ -282,12 +314,12 @@ export function useAuthMutation<TData = unknown, TVariables = unknown>(
  */
 export function useCriticalMutation<TData = unknown, TVariables = unknown>(
   mutationFn: (variables: TVariables) => Promise<TData>,
-  options?: Omit<UseMutationOptions<TData, TVariables>, 'mutationFn'>
+  options?: Omit<UseMutationOptions<TData, TVariables>, "mutationFn">
 ) {
   return useApiMutation({
     mutationFn,
-    retry: false, // No reintentar operaciones críticas automáticamente
-    showErrorAlert: true, // Mostrar errores críticos al usuario
+    retry: false,
+    showErrorAlert: true,
     ...options,
   });
 }

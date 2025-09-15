@@ -94,8 +94,7 @@ class SecureTokenStorage {
       const now = Date.now();
       const expiry = parseInt(expiryTimestamp, 10);
 
-      // Considerar expirado si queda menos de 1 minuto
-      const bufferTime = 60 * 1000; // 1 minuto en millisegundos
+      const bufferTime = 60 * 1000;
       return now + bufferTime >= expiry;
     } catch (error) {
       console.error("Error checking token expiry:", error);
@@ -169,7 +168,6 @@ class SecureTokenStorage {
     const now = Date.now();
     let milliseconds = 0;
 
-    // Parse formats like "15m", "1h", "30s"
     const timeValue = parseInt(expiresIn.slice(0, -1), 10);
     const timeUnit = expiresIn.slice(-1);
 
@@ -187,7 +185,6 @@ class SecureTokenStorage {
         milliseconds = timeValue * 24 * 60 * 60 * 1000;
         break;
       default:
-        // Default to 15 minutes if format is unknown
         milliseconds = 15 * 60 * 1000;
     }
 
@@ -208,7 +205,7 @@ class SecureTokenStorage {
       const expiry = parseInt(expiryTimestamp, 10);
       const diffMs = expiry - now;
 
-      return Math.max(0, Math.floor(diffMs / (60 * 1000))); // Convert to minutes
+      return Math.max(0, Math.floor(diffMs / (60 * 1000)));
     } catch {
       return 0;
     }

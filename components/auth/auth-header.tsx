@@ -19,28 +19,22 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
  */
 
 export interface AuthHeaderProps {
-  // Contenido
   title: string;
   subtitle?: string;
 
-  // Logo
   logo?: ImageSourcePropType;
   logoComponent?: React.ReactNode;
   showLogo?: boolean;
 
-  // Navegación
   showBackButton?: boolean;
   onBackPress?: () => void;
 
-  // Estilos
   containerStyle?: ViewStyle;
   titleStyle?: TextStyle;
   subtitleStyle?: TextStyle;
 
-  // Animaciones
   animated?: boolean;
 
-  // Accesibilidad
   testID?: string;
 }
 
@@ -58,7 +52,6 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
   animated = true,
   testID,
 }) => {
-  // =================== COMPONENTES ===================
   const LogoComponent = () => {
     if (!showLogo) return null;
 
@@ -74,10 +67,13 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
       );
     }
 
-    // Logo por defecto si no se proporciona uno
     return (
       <View style={[styles.logoContainer, styles.defaultLogoContainer]}>
-        <Text style={styles.defaultLogoText}>TolimaGO</Text>
+        <Image
+          source={require("@/assets/images/tolimago.png")}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
       </View>
     );
   };
@@ -102,7 +98,6 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
   const SubtitleComponent = animated ? Animated.Text : Text;
   const ContainerComponent = animated ? Animated.View : View;
 
-  // =================== PROPS DE ANIMACIÓN ===================
   const titleAnimationProps = animated
     ? {
         entering: FadeInUp.delay(200).duration(600),
@@ -127,16 +122,13 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
       testID={testID}
       {...containerAnimationProps}
     >
-      {/* Header superior con back button */}
       <View style={styles.topSection}>
         <BackButton />
         <View style={styles.spacer} />
       </View>
 
-      {/* Logo */}
       <LogoComponent />
 
-      {/* Contenido de texto */}
       <View style={styles.textContent}>
         <TitleComponent
           style={[styles.title, titleStyle]}
@@ -158,7 +150,6 @@ export const AuthHeader: React.FC<AuthHeaderProps> = ({
   );
 };
 
-// =================== ESTILOS ===================
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
@@ -171,15 +162,19 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     marginBottom: theme.spacing[4],
-    minHeight: 24, // Para mantener espacio consistente
+    minHeight: 24,
   },
 
   backButton: {
-    padding: theme.spacing[2],
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.neutral.surface,
-    ...theme.shadows.sm,
-  },
+  padding: theme.spacing[2],
+  borderRadius: theme.borderRadius.md,
+  backgroundColor: theme.colors.neutral.surface,
+  ...theme.shadows.sm,
+  position: "absolute",
+  left: theme.spacing[0],
+  top: theme.spacing[1],
+},
+
 
   spacer: {
     flex: 1,
@@ -192,8 +187,9 @@ const styles = StyleSheet.create({
   },
 
   logoImage: {
-    width: 80,
-    height: 80,
+    width: 200,
+    height: 200,
+    borderRadius: 90,
   },
 
   defaultLogoContainer: {

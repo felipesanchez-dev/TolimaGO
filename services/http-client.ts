@@ -14,9 +14,9 @@ import { secureTokenStorage, TokenData } from "./secure-storage";
 // Configuración base de la API
 const API_CONFIG = {
   BASE_URL: "http://192.168.1.8:3000/api/v1",
-  TIMEOUT: 10000, // 10 segundos
+  TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
-  RETRY_DELAY: 1000, // 1 segundo
+  RETRY_DELAY: 1000,
 } as const;
 
 // Tipos para las respuestas de la API
@@ -250,7 +250,7 @@ class HttpClient {
         "Content-Type": "application/json",
         Accept: "application/json",
         ...config?.headers,
-        Authorization: undefined, // Remove auth header
+        Authorization: undefined,
       },
       timeout: API_CONFIG.TIMEOUT,
     };
@@ -266,7 +266,6 @@ class HttpClient {
     } catch (error: any) {
       console.error("💥 [HTTP] postPublic error:", error);
 
-      // Si es un error de red, crear una respuesta de error estructurada
       if (error.code === "ERR_NETWORK" || error.code === "ECONNREFUSED") {
         throw {
           message:
