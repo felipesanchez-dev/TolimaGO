@@ -40,7 +40,6 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header with user info and logout */}
       <View style={styles.header}>
         <View style={styles.userInfo}>
           <View style={styles.avatar}>
@@ -66,13 +65,11 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Main Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Hero Section */}
         <View style={styles.heroSection}>
           <View style={styles.logoContainer}>
             <Image
-              source={require("@/assets/images/icon.png")}
+              source={require("@/assets/images/tolimago.png")}
               style={styles.appLogo}
             />
             <Text style={styles.appName}>TolimaGO</Text>
@@ -206,8 +203,8 @@ const styles = StyleSheet.create({
   },
 
   logoutButton: {
-    padding: spacing[2],
-    borderRadius: spacing[2],
+    padding: spacing[0],
+    borderRadius: spacing[0],
     backgroundColor: colors.error.light,
   },
 
@@ -226,9 +223,10 @@ const styles = StyleSheet.create({
   },
 
   appLogo: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
     marginBottom: spacing[4],
+    borderRadius: 30,
   },
 
   appName: {

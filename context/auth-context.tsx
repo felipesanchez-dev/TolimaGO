@@ -5,6 +5,7 @@ import {
   RegisterData,
 } from "@/services/auth-service";
 import { UserData } from "@/services/secure-storage";
+import { router } from "expo-router";
 import React, {
   createContext,
   useCallback,
@@ -221,6 +222,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       await authService.logout();
       dispatch({ type: "SET_UNAUTHENTICATED" });
+      router.replace("/auth/login");
     } catch (error: any) {
       console.error("Logout error:", error);
       // Asegurar que se limpie el estado local incluso si hay error
